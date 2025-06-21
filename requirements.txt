@@ -3,3 +3,4 @@ feedparser
 transformers
 newspaper3k
 torch
+lxml_html_clean
