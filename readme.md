@@ -2,6 +2,12 @@
 🗞️ News Article Summarizer
 </h1>
 <p1> This is a  Streamlit app  that allows users to summarize news articles either by pasting raw text or providing a news <b>URL</b>. It uses a <b> pre-trained NLP model </b> for summarization and also displays trending news from <b> Multiple Trusted Sources </b> .</p1>
+
+<a href="https://newsummarizer.streamlit.app/" target="_blank">
+  <img src="https://yourwebsite.com/path-to-image.jpg" alt="Live Here" width="600" />
+</a>
+
+
 <h2>
    🧠Model 
 </h2>
