@@ -16,7 +16,7 @@
 - Click on trending headlines to auto-summarize them. <br>
 - Trending headlines are fetched from RSS feeds with multiple source <br>
 - Clean and minimal UI.<br>
-- Trending News sources - BCC World, CNN World, India Today, The Hindu, Indian Express,  NDTV etc
+- Trending News sources - <b>BCC World, CNN World, India Today, The Hindu, Indian Express,  NDTV</b> etc
 
 </p>
 <h2>
