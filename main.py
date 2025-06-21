@@ -29,7 +29,7 @@ if st.button("Summarize"):
         st.error("Failed to extract or process the text.")
 
 # --- RSS Trending News Section ---
-st.subheader("📰 Top Articles from Indian News Sources")
+st.subheader("📰 Trending Articles ")
 source = st.selectbox("Choose Source", list(RSS_FEEDS.keys()))
 articles = get_articles(RSS_FEEDS[source])
 
