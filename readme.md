@@ -29,7 +29,7 @@
 🛠 Set-up <br>
    </h2>
 <p>
-git clone https://github.com/yourusername/news-summarizer.git<br>
+git clone https://github.com/gaurav-code098/News-Summarizer <br>
 cd news-summarizer<br>
 pip install -r requirements.txt <br>
 streamlit run main.py
