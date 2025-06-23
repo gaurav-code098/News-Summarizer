@@ -31,6 +31,6 @@
 <p>
    - git clone https://github.com/gaurav-code098/News-Summarizer <br>
    - cd news-summarizer<br>
-pip install -r requirements.txt <br>
-streamlit run main.py
+   - pip install -r requirements.txt <br>
+   - streamlit run main.py
 </p>
