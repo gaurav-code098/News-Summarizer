@@ -6,8 +6,6 @@ RSS_FEEDS = {
     "The Hindu": "https://www.thehindu.com/news/national/feeder/default.rss",
     "Indian Express": "https://indianexpress.com/section/india/feed/",
     "BBC World": "http://feeds.bbci.co.uk/news/world/rss.xml",
-    "CNN World": "http://rss.cnn.com/rss/edition_world.rss",
-    "Reuters World": "http://feeds.reuters.com/Reuters/worldNews",
     "The Guardian World": "https://www.theguardian.com/world/rss",
     "NY Times World": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
 }
