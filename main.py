@@ -42,11 +42,9 @@ if articles:
         with st.expander(f"{article['title']} ({article['published']})"):
             st.markdown(article['summary'], unsafe_allow_html=True)
             st.markdown(f"[🔗 Full Article]({article['link']})")
-            # A unique key is CRUCIAL for buttons inside a loop
-            # We use the article index as part of the key
+        
             if st.button(f"Summarize This Article", key=f"summarize_rss_{idx}"):
-                # We extract text from the link for a better summary (if available in utils)
-                # or fall back to the RSS summary text
+          
                 text_to_summarize = article.get('link') or article['summary']
                 with st.spinner("Summarizing..."):
                     # Use the URL to extract the full article text first (if it's a link)
