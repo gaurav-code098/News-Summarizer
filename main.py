@@ -31,14 +31,38 @@ if st.button("Summarize"):
 # --- RSS Trending News Section ---
 st.subheader("📰 Trending Articles ")
 source = st.selectbox("Choose Source", list(RSS_FEEDS.keys()))
+
+# The key of the selectbox ensures its state is maintained correctly across reruns
 articles = get_articles(RSS_FEEDS[source])
 
-for idx, article in enumerate(articles):
-    with st.expander(f"{article['title']} ({article['published']})"):
-        st.markdown(article['summary'], unsafe_allow_html=True)
-        if st.button(f"Summarize This Article {idx+1}"):
-            with st.spinner("Summarizing..."):
-                summary = summarize_text(article['summary'])
-                st.success("Summary:")
-                st.write(summary)
+# Check if articles exist to prevent errors
+if articles:
+    for idx, article in enumerate(articles):
+        # Use the article title and index to create a unique expander name
+        with st.expander(f"{article['title']} ({article['published']})"):
+            st.markdown(article['summary'], unsafe_allow_html=True)
             st.markdown(f"[🔗 Full Article]({article['link']})")
+            # A unique key is CRUCIAL for buttons inside a loop
+            # We use the article index as part of the key
+            if st.button(f"Summarize This Article", key=f"summarize_rss_{idx}"):
+                # We extract text from the link for a better summary (if available in utils)
+                # or fall back to the RSS summary text
+                text_to_summarize = article.get('link') or article['summary']
+                with st.spinner("Summarizing..."):
+                    # Use the URL to extract the full article text first (if it's a link)
+                    if text_to_summarize.startswith("http"):
+                        full_text = extract_text_from_url(text_to_summarize)
+                    else:
+                        # If the 'link' wasn't used, just use the RSS summary
+                        full_text = text_to_summarize 
+                    # Summarize the extracted text
+                    summary_result = summarize_text(full_text)
+                    st.success("Summary:")
+                    # Display the newly generated summary
+                    st.markdown(f"""
+                    <div style='background-color:#202020; padding: 1rem; border-radius: 12px; color: white'>
+                        {summary_result}
+                    </div>
+                    """, unsafe_allow_html=True)
+else:
+    st.info(f"No articles found for the source: {source}")
