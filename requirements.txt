@@ -4,3 +4,8 @@ transformers
 newspaper3k
 torch
 lxml_html_clean
+sentencepiece
+requests
+beautifulsoup4
+huggingface_hub[hf_xet]
+ddgs
