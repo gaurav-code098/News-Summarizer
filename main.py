@@ -36,13 +36,7 @@ if st.button("Summarize"):
 # --- Helper Function to Display Articles (NEW) ---
 # This avoids repeating code in our tabs!
 def display_articles(articles: list, key_prefix: str):
-    """
-    Loops through articles and displays them with a unique summarization button.
     
-    :param articles: The list of article dictionaries.
-    :param key_prefix: A unique string (e.g., "breaking") to avoid
-                       button key collisions in Streamlit.
-    """
     if not articles:
         st.info("No articles found for this source.")
         return
@@ -122,7 +116,7 @@ with tab5:
     st.markdown("I will search trusted news sites or our RSS feeds to find an answer.")
     
     question = st.text_input("Ask your question:", 
-                             placeholder="e.g., What happened at the Red Fort? OR What's new in tech?")
+                             placeholder="e.g., Ask Questios regarding today's news?")
 
     if st.button("Get Answer", key="qa_button"):
         if not question:
