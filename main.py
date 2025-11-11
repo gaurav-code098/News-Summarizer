@@ -112,7 +112,7 @@ with tab4:
     display_articles(Around_world, key_prefix="World")
 
 with tab5:
-    st.subheader("Ask About Anything")
+    st.subheader("Ask Questions Regarding Today's News")
     st.markdown("I will search trusted news sources find an answer.")
     
     question = st.text_input("Ask your question:", 
