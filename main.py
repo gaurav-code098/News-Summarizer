@@ -116,7 +116,7 @@ with tab5:
     st.markdown("I will search trusted news sites or our RSS feeds to find an answer.")
     
     question = st.text_input("Ask your question:", 
-                             placeholder="e.g., Ask Questios regarding today's news?")
+                             placeholder="e.g., Ask Questions regarding Today's news!")
 
     if st.button("Get Answer", key="qa_button"):
         if not question:
