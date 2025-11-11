@@ -113,7 +113,7 @@ with tab4:
 
 with tab5:
     st.subheader("Ask About Anything")
-    st.markdown("I will search trusted news sites or our RSS feeds to find an answer.")
+    st.markdown("I will search trusted news sources find an answer.")
     
     question = st.text_input("Ask your question:", 
                              placeholder="e.g., Ask Questions regarding Today's news!")
