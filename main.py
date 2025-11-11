@@ -91,7 +91,7 @@ TRUSTED_DOMAINS = [
 # --- REFACTORED RSS Trending News Section (Using Tabs) ---
 st.subheader("📰 Trending Articles")
 
-tab1, tab2, tab3 , tab4,tab5 = st.tabs(["⚡ Breaking News", "📰 General News", "💻 Tech News" , "🌐Around TheWorld" , "Ask AI"])
+tab1, tab2, tab3 , tab4,tab5 = st.tabs(["⚡ Breaking News", "📰 General News", "💻 Tech News" , "🌐Around TheWorld" , "🤖Ask AI"])
 
 with tab1:
     # 1. Call the 5-minute cache function
