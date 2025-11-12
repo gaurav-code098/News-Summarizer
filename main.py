@@ -36,13 +36,7 @@ if st.button("Summarize"):
 # --- Helper Function to Display Articles (NEW) ---
 # This avoids repeating code in our tabs!
 def display_articles(articles: list, key_prefix: str):
-    """
-    Loops through articles and displays them with a unique summarization button.
     
-    :param articles: The list of article dictionaries.
-    :param key_prefix: A unique string (e.g., "breaking") to avoid
-                       button key collisions in Streamlit.
-    """
     if not articles:
         st.info("No articles found for this source.")
         return
@@ -58,7 +52,7 @@ def display_articles(articles: list, key_prefix: str):
                 # Use the article link to get the full text
                 text_to_summarize = article.get('link')
                 
-                if text_to_summarIZE:
+                if text_to_summarize: # Fixed typo: text_to_summarIZE
                     with st.spinner("Summarizing..."):
                         full_text = extract_text_from_url(text_to_summarize)
                         
@@ -91,38 +85,22 @@ TRUSTED_DOMAINS = [
 # --- REFACTORED RSS Trending News Section (Using Tabs) ---
 st.subheader("📰 Trending Articles")
 
-tab1, tab2, tab3 , tab4,tab5 = st.tabs(["⚡ Breaking News", "📰 General News", "💻 Tech News" , "🌐Around TheWorld" , "🤖Ask AI"])
+tab1, tab2, tab3 , tab4,tab5 = st.tabs(["⚡ Breaking News", "📰 General News", "💻 Tech News" , "🌐Around TheWorld" , "Ask AI"])
 
+# --- Tab 1: Breaking News (Unchanged) ---
 with tab1:
     # 1. Call the 5-minute cache function
     breaking_articles = fetch_breaking_news(RSS_FEEDS["NDTV"])
     # 2. Use the helper to display them (FIXED: Removed typo from your code)
     display_articles(breaking_articles, key_prefix="breaking")
 
+# --- Tab 2: Ask AI (Moved from tab5) ---
 with tab2:
-    # 1. Call the 30-minute cache function
-    general_articles = fetch_general_news(RSS_FEEDS["Times of India"])
-    # 2. Use the helper to display them
-    display_articles(general_articles, key_prefix="general")
-
-with tab3:
-    # 1. Call the 30-minute cache function (it's reusable!)
-    tech_articles = fetch_general_news(RSS_FEEDS["TechCrunch"])
-    # 2. Use the helper to display them
-    display_articles(tech_articles, key_prefix="tech")
-
-with tab4:
-    # 1. Call the 30-minute cache function (it's reusable!)
-    Around_world = fetch_general_news(RSS_FEEDS["BBC World"])
-    # 2. Use the helper to display them
-    display_articles(Around_world, key_prefix="World")
-
-with tab5:
-    st.subheader("Ask About Anything")
-    st.markdown("I will search trusted news sites or our RSS feeds to find an answer.")
+    st.subheader("Ask Questions Regarding Today's News")
+    st.markdown("I will search trusted news sources find an answer.")
     
     question = st.text_input("Ask your question:", 
-                             placeholder="e.g., What happened at the Red Fort? OR What's new in tech?")
+                             placeholder="e.g., Ask Questions regarding Today's news!")
 
     if st.button("Get Answer", key="qa_button"):
         if not question:
@@ -255,3 +233,24 @@ with tab5:
                         """, unsafe_allow_html=True)
                         
                     # --- "Show raw search results" expander is removed ---
+
+# --- Tab 3: General News (Moved from tab2) ---
+with tab3:
+    # 1. Call the 30-minute cache function
+    general_articles = fetch_general_news(RSS_FEEDS["Times of India"])
+    # 2. Use the helper to display them
+    display_articles(general_articles, key_prefix="general")
+
+# --- Tab 4: Tech News (Moved from tab3) ---
+with tab4:
+    # 1. Call the 30-minute cache function (it's reusable!)
+    tech_articles = fetch_general_news(RSS_FEEDS["TechCrunch"])
+    # 2. Use the helper to display them
+    display_articles(tech_articles, key_prefix="tech")
+
+# --- Tab 5: Around The World (Moved from tab4) ---
+with tab5:
+    # 1. Call the 30-minute cache function (it's reusable!)
+    Around_world = fetch_general_news(RSS_FEEDS["BBC World"])
+    # 2. Use the helper to display them
+    display_articles(Around_world, key_prefix="World")
