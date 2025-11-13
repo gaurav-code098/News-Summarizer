@@ -1,6 +1,7 @@
 import streamlit as st
 from utils import extract_text_from_url
-# --- 1. IMPORT THE NEW YOUTUBE FUNCTION ---/
+# Import the functions and the RSS_FEEDS dict
+from fetch_news import fetch_breaking_news, fetch_general_news, RSS_FEEDS
 from summarizer import summarize_text , load_qa_pipeline , answer_question
 from urllib.parse import urlparse
 from ddgs import DDGS
@@ -11,7 +12,7 @@ st.set_page_config(page_title="📰 News Article Summarizer")
 st.markdown('<h1 style="text-align: center;">📰 News Article Summarizer</h1>', unsafe_allow_html=True)
 
 
-# --- (Summarization from URL & display_articles functions are unchanged) ---
+# --- Summarization from URL or Raw Text ---
 st.subheader("🔗 Summarize from URL or Raw Text")
 user_input = st.text_area("Paste article URL or raw text")
 
@@ -32,6 +33,7 @@ if st.button("Summarize"):
     else:
         st.error("Failed to extract or process the text.")
 
+# --- Helper Function to Display Articles ---
 def display_articles(articles: list, key_prefix: str):
     
     if not articles:
@@ -65,21 +67,27 @@ def display_articles(articles: list, key_prefix: str):
                     st.warning("No article link available to summarize.")
 
 TRUSTED_DOMAINS = [
-    "indiatoday.in", "indianexpress.com", "ndtv.com", "thehindu.com",
-    "timesofindia.com", "hindustantimes.com", "newsbytesapp.com",
-    "techcrunch.com", "nytimes.com", "theguardian.com",
+    "indiatoday.in",
+    "indianexpress.com",
+    "ndtv.com",
+    "thehindu.com",
+    "timesofindia.com",
+    "hindustantimes.com",
+    "newsbytesapp.com",
+    "techcrunch.com",
+    "nytimes.com",
+    "theguardian.com",
 ]
 
 # --- REFACTORED RSS Trending News Section (Using Tabs) ---
 st.subheader("📰 Trending Articles")
 
-# --- 2. ADD THE NEW TAB NAME ---
-tab1, tab2, tab3 , tab4, tab5, tab6 = st.tabs([
-    "⚡ Breaking News", "🤖Ask AI", "📰 General News", "💻 Tech News" , "🌐Around TheWorld", "🎬 News Reels"
-])
+# --- 5 Tabs, with "Ask AI" as the second one ---
+tab1, tab2, tab3 , tab4, tab5 = st.tabs(["⚡ Breaking News", "🤖Ask AI", "📰 General News", "💻 Tech News" , "🌐Around TheWorld"])
 
 # --- Tab 1: Breaking News ---
 with tab1:
+    # Refresh button at the top
     if st.button("Refresh Breaking News", key="refresh_breaking"):
         st.cache_data.clear() 
         st.rerun() 
@@ -101,17 +109,20 @@ with tab2:
         else:
             clean_question = question.lower().strip()
             
-            # (Rest of your Ask AI "Super Router" logic goes here... unchanged)
+            # --- 1. THE "SUPER ROUTER" (for Tech) ---
             if "tech" in clean_question or "technology" in clean_question:
-                # (Tech question logic)
+                
                 st.info("Tech question detected! Fetching from internal TechCrunch RSS feed...")
                 with st.spinner("Fetching TechCrunch news..."):
                     tech_articles = fetch_general_news(RSS_FEEDS["TechCrunch"])
+                    
                     if not tech_articles:
                         st.error("Could not fetch articles from TechCrunch RSS feed.")
                         st.stop()
+                    
                     all_summaries = [article['summary'] for article in tech_articles]
                     context = " ".join(all_summaries)
+
                 with st.spinner("Summarizing tech news..."):
                     answer = summarize_text(context)
                     st.subheader("Summary of What's Happening in Tech:")
@@ -122,21 +133,31 @@ with tab2:
                     """, unsafe_allow_html=True)
             
             else:
-                # (Web search logic for all other questions)
+                # --- 2. THE "ELSE" BLOCK (for all other questions) ---
+                
                 context = ""
                 with st.spinner(f"Searching trusted sites for: '{question}'..."):
+                    
                     site_query = " OR ".join([f"site:{domain}" for domain in TRUSTED_DOMAINS])
                     final_query = f"{question} ({site_query})"
+                    
                     try:
                         search_results: List[Dict[str, str]] = DDGS().text(
-                            query=final_query, region="in-en", max_results=5, timelimit="w"
+                            query=final_query,
+                            region="in-en",
+                            max_results=5,
+                            timelimit="w"
                         )
+                        
                         if not search_results:
                             st.error("No results found on your trusted news sites for that query.")
                             st.stop()
+
+                        # Prints to console
                         print("--- RAW SEARCH RESULTS (DEBUG) ---")
                         print(json.dumps(search_results, indent=2))
                         print("---------------------------------")
+
                     except Exception as e:
                         st.error(f"Error searching DuckDuckGo: {e}")
                         st.stop()
@@ -146,21 +167,28 @@ with tab2:
                     for result in search_results[:5]: # Use top 5
                         if "body" in result:
                             all_summaries.append(result["body"])
+
                     context = " ".join(all_summaries)
+                    
                     if not context:
                         st.error("I found results, but they had no text summaries.")
                         st.stop()
 
+                # --- 4. THE "SMART ROUTER" (Long/Short Answer) ---
                 with st.spinner("Analyzing and generating answers..."):
+                    
                     broad_question_triggers = ("what's happening", "what's new", "tell me about", "summarize")
                     
                     if any(clean_question.startswith(trigger) for trigger in broad_question_triggers):
-                        # (Broad question logic)
+                        # --- BROAD QUESTION ---
                         st.write("Broad question detected. Running Summarizer...")
                         answer = summarize_text(context)
+                        
+                        # Create an HTML link
                         first_result_url = search_results[0].get('href', '#')
                         html_link = f'<a href="{first_result_url}" target="_blank" style="color: #00BFFF; text-decoration: none;">🔗 Read the top article</a>'
                         answer_with_link = f"{answer}<br><br>{html_link}"
+                        
                         st.subheader("Summary of Findings:")
                         st.markdown(f"""
                         <div style='background-color:#202020; padding: 1rem; border-radius: 12px; color: white'>
@@ -169,10 +197,13 @@ with tab2:
                         """, unsafe_allow_html=True)
                     
                     else:
-                        # (Specific question logic)
+                        # --- SPECIFIC QUESTION ---
                         st.write("Specific question detected. Running QA and Summarizer...")
+                        
                         short_answer = answer_question(question, context)
                         long_answer = summarize_text(context)
+                        
+                        # Create an HTML link
                         first_result_url = search_results[0].get('href', '#')
                         html_link = f'<a href="{first_result_url}" target="_blank" style="color: #00BFFF; text-decoration: none;">🔗 Read the top article</a>'
                         long_answer_with_link = f"{long_answer}<br><br>{html_link}"
@@ -181,74 +212,4 @@ with tab2:
                         quick_answer_display = ""
                         
                         if is_too_short:
-                            st.write("QA answer is too short. Using first sentence of summary instead.")
-                            try:
-                                quick_answer_display = long_answer.split('.')[0] + '.'
-                            except Exception:
-                                quick_answer_display = long_answer
-                        else:
-                            quick_answer_display = short_answer
-                        
-                        st.subheader("Quick Answer:")
-                        st.markdown(f"""
-                        <div style='background-color:#202020; padding: 1rem; border-radius: 12px; color: white'>
-                            {quick_answer_display}
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        st.subheader("Detailed Summary:")
-                        st.markdown(f"""
-                        <div style='background-color:#202020; padding: 1rem; border-radius: 12px; color: white'>
-                            {long_answer_with_link}
-                        </div>
-                        """, unsafe_allow_html=True)
-
-# --- Tab 3: General News ---
-with tab3:
-    general_articles = fetch_general_news(RSS_FEEDS["Times of India"])
-    display_articles(general_articles, key_prefix="general")
-
-# --- Tab 4: Tech News ---
-with tab4:
-    tech_articles = fetch_general_news(RSS_FEEDS["TechCrunch"])
-    display_articles(tech_articles, key_prefix="tech")
-
-# --- Tab 5: Around The World ---
-with tab5:
-    Around_world = fetch_general_news(RSS_FEEDS["BBC World"])
-    display_articles(Around_world, key_prefix="World")
-
-# --- 3. NEW: This is the logic for your new tab ---
-with tab6:
-    st.subheader("🎬 Latest News Reels")
-    
-    if st.button("Refresh Reels", key="refresh_reels"):
-        st.cache_data.clear()
-        st.rerun()
-
-    # Call our new function
-    shorts = fetch_youtube_shorts(RSS_FEEDS["NDTV_Youtube"])
-
-    if not shorts:
-        st.info("No recent #shorts found in the NDTV YouTube feed.")
-    else:
-        # Create a 3-column grid
-        col1, col2, col3 = st.columns(3)
-        
-        # Distribute the shorts into the columns
-        for i, short in enumerate(shorts):
-            if i % 3 == 0:
-                with col1:
-                    st.image(short['thumbnail'], use_column_width=True)
-                    st.markdown(f"[{short['title']}]({short['link']})")
-                    st.divider()
-            elif i % 3 == 1:
-                with col2:
-                    st.image(short['thumbnail'], use_column_width=True)
-                    st.markdown(f"[{short['title']}]({short['link']})")
-                    st.divider()
-            else:
-                with col3:
-                    st.image(short['thumbnail'], use_column_width=True)
-                    st.markdown(f"[{short['title']}]({short['link']})")
-                    st.divider()
+                            st.write("QA answer is too short. Using
