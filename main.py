@@ -54,29 +54,38 @@ def display_articles(articles: list, key_prefix: str):
             # We use the key_prefix and index to make a unique key
             if st.button(f"Summarize This Article", key=f"summarize_{key_prefix}_{idx}"):
                 
-                # Use the article link to get the full text
-                text_to_summarize = article.get('link')
+                article_link = article.get('link')
+                article_summary = article.get('summary', '') # Get the RSS summary
                 
-                if text_to_summarize: 
-                    with st.spinner("Summarizing..."):
-                        full_text = extract_text_from_url(text_to_summarize)
+                if not article_link:
+                    st.warning("No article link available to summarize.")
+                else:
+                    with st.spinner("Scraping and summarizing..."):
+                        
+                        # --- 1. TRY TO SCRAPE THE FULL ARTICLE ---
+                        full_text = extract_text_from_url(article_link)
+                        
+                        text_to_summarize = ""
                         
                         if full_text:
-                            # --- 1. GET THE SUMMARY ---
-                            summary_result = summarize_text(full_text)
-                            st.success("Summary:")
+                            st.write("Scrape successful! Summarizing full article...")
+                            text_to_summarize = full_text
+                        else:
+                            # --- 2. THE FALLBACK ---
+                            st.warning("Scrape failed (site is protected). Summarizing the short RSS description instead.")
+                            text_to_summarize = article_summary
+                        
+                        # --- 3. SUMMARIZE WHATEVER TEXT WE HAVE ---
+                        if text_to_summarize:
+                            summary_result = summarize_text(text_to_summarize)
+                            st.success("AI-Generated Summary:")
                             st.markdown(f"""
                             <div style='background-color:#202020; padding: 1rem; border-radius: 12px; color: white'>
                                 {summary_result}
                             </div>
                             """, unsafe_allow_html=True)
-                            
-                            # --- 2. The full article text is no longer shown ---
-                            
                         else:
-                            st.error("Could not extract text from the article link.")
-                else:
-                    st.warning("No article link available to summarize.")
+                            st.error("Could not find any text to summarize.")
 TRUSTED_DOMAINS = [
     "indiatoday.in",
     "indianexpress.com",
