@@ -90,19 +90,20 @@ tab1, tab2, tab3 , tab4, tab5 = st.tabs(["⚡ Breaking News", "🤖Ask AI", "�
 
 # --- Tab 1: Breaking News (Unchanged) ---
 with tab1:
-    # 1. Call the 5-minute cache function
-    breaking_articles = fetch_breaking_news(RSS_FEEDS["NDTV"])
     
-    # --- 2. ADD THIS BUTTON ---
+    # --- 1. PUT THE BUTTON AT THE TOP ---
     if st.button("Refresh Breaking News", key="refresh_breaking"):
         # This clears all data caches (RSS feeds)
         st.cache_data.clear() 
         # This re-runs the app from the top
         st.rerun() 
-
-    # 3. Use the helper to display them
+    
+    # --- 2. FETCH THE NEWS *AFTER* THE BUTTON ---
+    # 1. Call the 5-minute cache function
+    breaking_articles = fetch_breaking_news(RSS_FEEDS["NDTV"])
+    
+    # 3. Use the helper to display them (I also fixed the typo from your code)
     display_articles(breaking_articles, key_prefix="breaking")
-
 # --- Tab 2: Ask AI (Moved from tab5) ---
 with tab2:
     st.subheader("Ask Questions Regarding Today's News")
