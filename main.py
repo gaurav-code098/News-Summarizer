@@ -238,7 +238,7 @@ with tab2:
 
 # --- Tab 3: General News ---
 with tab3:
-    general_articles = fetch_general_news(RSS_FEEDS["Times of India"])
+    general_articles = fetch_general_news(RSS_FEEDS["The Hindu"])
     display_articles(general_articles, key_prefix="general")
 
 # --- Tab 4: Tech News ---
