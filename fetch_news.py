@@ -1,7 +1,7 @@
 import streamlit as st
 import feedparser
 from typing import List, Dict
-
+from fetch_news import fetch_breaking_news, fetch_general_news, fetch_youtube_videos, RSS_FEEDS
 # --- 1. NEW: Added YouTube Channel Feed ---
 RSS_FEEDS = {
     "NDTV": "https://feeds.feedburner.com/ndtvnews-india-news",
