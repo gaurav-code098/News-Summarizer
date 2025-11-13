@@ -35,7 +35,13 @@ if st.button("Summarize"):
 
 # --- Helper Function to Display Articles ---
 def display_articles(articles: list, key_prefix: str):
+    """
+    Loops through articles and displays them with a unique summarization button.
     
+    :param articles: The list of article dictionaries.
+    :param key_prefix: A unique string (e.g., "breaking") to avoid
+                       button key collisions in Streamlit.
+    """
     if not articles:
         st.info("No articles found for this source.")
         return
@@ -45,22 +51,32 @@ def display_articles(articles: list, key_prefix: str):
             st.markdown(article['summary'], unsafe_allow_html=True)
             st.markdown(f"[🔗 Full Article]({article['link']})")
             
+            # We use the key_prefix and index to make a unique key
             if st.button(f"Summarize This Article", key=f"summarize_{key_prefix}_{idx}"):
                 
+                # Use the article link to get the full text
                 text_to_summarize = article.get('link')
                 
                 if text_to_summarize: 
-                    with st.spinner("Summarizing..."):
+                    with st.spinner("Scraping and summarizing..."):
                         full_text = extract_text_from_url(text_to_summarize)
                         
                         if full_text:
+                            # --- 1. GET THE SUMMARY ---
                             summary_result = summarize_text(full_text)
-                            st.success("Summary:")
+                            st.success("AI-Generated Summary:")
                             st.markdown(f"""
                             <div style='background-color:#202020; padding: 1rem; border-radius: 12px; color: white'>
                                 {summary_result}
                             </div>
                             """, unsafe_allow_html=True)
+                            
+                            # --- 2. NEW: SHOW THE FULL SCRAPED TEXT ---
+                            st.info("Full Scraped Article Text (for reference):")
+                            # We put it in an expander so it doesn't clog the page
+                            with st.expander("Click to Read Full Scraped Text"):
+                                st.text(full_text)
+                            
                         else:
                             st.error("Could not extract text from the article link.")
                 else:
