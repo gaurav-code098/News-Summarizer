@@ -112,7 +112,7 @@ with tab1:
         st.cache_data.clear() 
         st.rerun() 
     
-    breaking_articles = fetch_breaking_news(RSS_FEEDS["NDTV"])
+    breaking_articles = fetch_breaking_news(RSS_FEEDS["The Hindu"])
     display_articles(breaking_articles, key_prefix="breaking")
 
 # --- Tab 2: Ask AI ---
