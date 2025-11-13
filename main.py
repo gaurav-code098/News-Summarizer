@@ -83,7 +83,7 @@ TRUSTED_DOMAINS = [
 st.subheader("📰 Trending Articles")
 
 # --- 5 Tabs, with "Ask AI" as the second one ---
-tab1, tab2, tab3 , tab4, tab5 = st.tabs(["⚡ Breaking News", "🤖Ask AI", "📰 General News", "💻 Tech News" , "🌐Around TheWorld"])
+tab1, tab2, tab3 , tab4, tab5 ,tab6 = st.tabs(["⚡ Breaking News", "🤖Ask AI", "📰 General News", "💻 Tech News" , "🌐Around TheWorld", "💰 Finance"])
 
 # --- Tab 1: Breaking News ---
 with tab1:
@@ -250,3 +250,8 @@ with tab4:
 with tab5:
     Around_world = fetch_general_news(RSS_FEEDS["BBC World"])
     display_articles(Around_world, key_prefix="World")
+with tab6:
+    # Call the 30-minute cache function (it's reusable!)
+    finance_articles = fetch_general_news(RSS_FEEDS["Economic_Times"])
+    # 2. Use the helper to display them
+    display_articles(finance_articles, key_prefix="finance")
