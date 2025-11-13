@@ -12,7 +12,7 @@ RSS_FEEDS = {
     "NY Times World": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
     "Reuters Top News": "http://feeds.reuters.com/reuters/topNews",
     "TechCrunch": "https://techcrunch.com/feed/",
-    "Financial_Express": "httpss://www.financialexpress.com/feed/",
+    "Investing_India": "https://in.investing.com/rss/news.rss",
 }
 
 # In fetch_news.py
