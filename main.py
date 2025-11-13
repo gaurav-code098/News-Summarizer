@@ -251,7 +251,7 @@ with tab5:
     Around_world = fetch_general_news(RSS_FEEDS["BBC World"])
     display_articles(Around_world, key_prefix="World")
 # --- Tab 5: Finance ---
-ith tab6:
+with tab6:
     # 1. Call the 30-minute cache function
     finance_articles = fetch_general_news(RSS_FEEDS["Investing_India"]) 
     
