@@ -62,13 +62,20 @@ def fetch_youtube_shorts(feed_url: str, limit: int = 12) -> List[Dict]:
     shorts = []
     
     for entry in feed.entries:
-        # Check if "#shorts" is in the title (case-insensitive)
-        if "#shorts" in entry.title.lower():
+        
+        # --- THIS IS THE NEW, MORE RELIABLE CHECK ---
+        # We check the URL structure instead of the title
+        if "/shorts/" in entry.link:
+            
+            # --- Check for thumbnail (safer code) ---
+            thumbnail_url = ""
+            if 'media_thumbnail' in entry and entry.media_thumbnail:
+                thumbnail_url = entry.media_thumbnail[0]['url']
+            
             shorts.append({
                 'title': entry.title,
                 'link': entry.link,
-                # Get the thumbnail URL
-                'thumbnail': entry.media_thumbnail[0]['url'] 
+                'thumbnail': thumbnail_url 
             })
         
         # Stop once we have enough shorts
