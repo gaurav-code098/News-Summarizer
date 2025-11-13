@@ -34,7 +34,7 @@ def parse_feed(feed_url: str, limit: int) -> List[Dict]:
 def fetch_breaking_news(feed_url: str) -> List[Dict]:
     """Fetches top 5 breaking news articles with a 5-minute cache."""
     print(f"--- FETCHING BREAKING NEWS (5 min TTL) from {feed_url} ---")
-    return parse_feed(feed_url, limit=5)
+    return parse_feed(feed_url, limit=10)
 
 @st.cache_data(ttl="30m") # 30 Minute Cache
 def fetch_general_news(feed_url: str) -> List[Dict]:
