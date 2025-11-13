@@ -212,4 +212,41 @@ with tab2:
                         quick_answer_display = ""
                         
                         if is_too_short:
-                            st.write("QA answer is too short. Using
+                            st.write("QA answer is too short. Using first sentence of summary instead.")
+                            try:
+                                quick_answer_display = long_answer.split('.')[0] + '.'
+                            except Exception:
+                                quick_answer_display = long_answer
+                        else:
+                            quick_answer_display = short_answer
+                        
+                        st.subheader("Quick Answer:")
+                        st.markdown(f"""
+                        <div style='background-color:#202020; padding: 1rem; border-radius: 12px; color: white'>
+                            {quick_answer_display}
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        st.subheader("Detailed Summary:")
+                        st.markdown(f"""
+                        <div style='background-color:#202020; padding: 1rem; border-radius: 12px; color: white'>
+                            {long_answer_with_link}
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                    # --- "Show raw search results" expander is removed ---
+
+# --- Tab 3: General News ---
+with tab3:
+    general_articles = fetch_general_news(RSS_FEEDS["Times of India"])
+    display_articles(general_articles, key_prefix="general")
+
+# --- Tab 4: Tech News ---
+with tab4:
+    tech_articles = fetch_general_news(RSS_FEEDS["TechCrunch"])
+    display_articles(tech_articles, key_prefix="tech")
+
+# --- Tab 5: Around The World ---
+with tab5:
+    Around_world = fetch_general_news(RSS_FEEDS["BBC World"])
+    display_articles(Around_world, key_prefix="World")
