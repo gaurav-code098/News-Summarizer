@@ -12,6 +12,7 @@ RSS_FEEDS = {
     "NY Times World": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
     "Reuters Top News": "http://feeds.reuters.com/reuters/topNews",
     "TechCrunch": "https://techcrunch.com/feed/",
+    "Economic_Times": "https://economictimes.indiatimes.com/rssfeedstopstories.cms",
 }
 
 def parse_feed(feed_url: str, limit: int) -> List[Dict]:
