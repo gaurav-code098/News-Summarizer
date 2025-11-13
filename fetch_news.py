@@ -51,10 +51,16 @@ def fetch_general_news(feed_url: str) -> List[Dict]:
 
 # --- 2. NEW: Special function just for YouTube Shorts ---
 
+# In fetch_news.py
+
+# ... (all your other code, including fetch_breaking_news and fetch_general_news) ...
+
+# --- THIS IS THE FINAL, UPDATED FUNCTION ---
 @st.cache_data(ttl="30m") # 30 Minute Cache
 def fetch_youtube_shorts(feed_url: str, limit: int = 12) -> List[Dict]:
     """
-    Fetches videos from a YouTube RSS feed, filters for #shorts,
+    Fetches videos from a YouTube RSS feed, filters for shorts by
+    checking the *thumbnail dimensions* (vertical = short),
     and returns their title, link, and thumbnail.
     """
     print(f"--- FETCHING YOUTUBE SHORTS (30 min TTL) from {feed_url} ---")
@@ -62,22 +68,31 @@ def fetch_youtube_shorts(feed_url: str, limit: int = 12) -> List[Dict]:
     shorts = []
     
     for entry in feed.entries:
-        
-        # --- THIS IS THE NEW, MORE RELIABLE CHECK ---
-        # We check the URL structure instead of the title
-        if "/shorts/" in entry.link:
+        try:
+            # --- THIS IS THE RELIABLE CHECK ---
+            # We check the thumbnail dimensions.
+            # A short is always vertical (height > width).
             
-            # --- Check for thumbnail (safer code) ---
-            thumbnail_url = ""
             if 'media_thumbnail' in entry and entry.media_thumbnail:
-                thumbnail_url = entry.media_thumbnail[0]['url']
-            
-            shorts.append({
-                'title': entry.title,
-                'link': entry.link,
-                'thumbnail': thumbnail_url 
-            })
+                thumbnail = entry.media_thumbnail[0]
+                
+                # Check if dimension data is available
+                if 'height' in thumbnail and 'width' in thumbnail:
+                    height = int(thumbnail['height'])
+                    width = int(thumbnail['width'])
+                    
+                    if height > width: 
+                        # It's a vertical video, so it's a Short!
+                        shorts.append({
+                            'title': entry.title,
+                            'link': entry.link,
+                            'thumbnail': thumbnail['url'] 
+                        })
         
+        except Exception as e:
+            # Log the error but continue
+            print(f"Could not parse video entry: {entry.title}. Error: {e}")
+
         # Stop once we have enough shorts
         if len(shorts) >= limit:
             break
