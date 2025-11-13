@@ -1,55 +1,41 @@
-from newspaper import Article
-
-# def extract_text_from_url(url):
-#     try:
-#         article = Article(url)
-#         article.download()
-#         article.parse()
-#         return article.text[:4000]
-#     except Exception as e:
-#         return f"Error: {e}"
 import requests
 from bs4 import BeautifulSoup
 
+# --- NEW: Import the newspaper library ---
+from newspaper import Article, Config
+
 def extract_text_from_url(url: str) -> str:
     """
-    Fetches text from a URL.
-    This new version is smarter:
-    1. It uses a User-Agent to identify as a browser.
-    2. It only gets text from <p> paragraph tags.
+    Fetches text from a URL using the newspaper3k library,
+    which is much more robust against modern news sites.
     """
     try:
-        # Set a User-Agent to pretend we are a real browser
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
+        # --- 1. Set up configuration (to act like a browser) ---
+        config = Config()
+        config.browser_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         
-        response = requests.get(url, headers=headers, timeout=10)
+        # --- 2. Create the Article object ---
+        article = Article(url, config=config)
         
-        # Check if the request was successful
-        if response.status_code != 200:
-            print(f"Error: Failed to fetch {url}, status code {response.status_code}")
-            return None
-
-        soup = BeautifulSoup(response.content, "html.parser")
+        # --- 3. Download and parse the article ---
+        article.download()
+        article.parse()
         
-        # Find all paragraph tags <p>
-        # This is a much cleaner way to get article text
-        paragraphs = soup.find_all('p')
-        
-        if not paragraphs:
-            # Fallback if no <p> tags are found (less likely)
-            print(f"Warning: No <p> tags found at {url}. Skipping.")
-            return None
-
-        # Join the text from all paragraphs
-        article_text = " ".join([p.get_text(strip=True) for p in paragraphs])
-        
-        return article_text
+        # --- 4. Return the clean text ---
+        return article.text
     
-    except requests.RequestException as e:
-        print(f"Error fetching URL {url}: {e}")
-        return None
     except Exception as e:
-        print(f"Error processing URL {url}: {e}")
-        return None
+        print(f"--- NEWSPAPER3K FAILED to extract text from {url}. Error: {e} ---")
+        # Fallback to our old, simple scraper (just in case)
+        try:
+            headers = {'User-Agent': config.browser_user_agent}
+            response = requests.get(url, headers=headers, timeout=10)
+            if response.status_code != 200: return None
+            soup = BeautifulSoup(response.content, "html.parser")
+            paragraphs = soup.find_all('p')
+            if not paragraphs: return None
+            article_text = " ".join([p.get_text(strip=True) for p in paragraphs])
+            return article_text
+        except Exception as e2:
+            print(f"--- SIMPLE SCRAPER ALSO FAILED. Error: {e2} ---")
+            return None
