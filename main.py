@@ -1,7 +1,6 @@
 import streamlit as st
 from utils import extract_text_from_url
-# --- 1. IMPORT THE NEW YOUTUBE FUNCTION ---
-from fetch_news import fetch_breaking_news, fetch_general_news, fetch_youtube_shorts, RSS_FEEDS
+# --- 1. IMPORT THE NEW YOUTUBE FUNCTION ---/
 from summarizer import summarize_text , load_qa_pipeline , answer_question
 from urllib.parse import urlparse
 from ddgs import DDGS
