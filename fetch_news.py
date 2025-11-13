@@ -25,7 +25,7 @@ def parse_feed(feed_url: str, limit: int) -> List[Dict]:
     for entry in feed.entries[:num_articles]:
         articles.append({
             'title': entry.title,
-            'summary': entry.summary,
+            'summary': entry.get('summary', entry.get('description', '')),
             'link': entry.link,
             'published': entry.get('published', 'No date') 
         })
