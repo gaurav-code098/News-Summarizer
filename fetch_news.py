@@ -15,20 +15,43 @@ RSS_FEEDS = {
     "Financial_Express": "httpss://www.financialexpress.com/feed/",
 }
 
+# In fetch_news.py
+
 def parse_feed(feed_url: str, limit: int) -> List[Dict]:
     """Helper function to parse a feed and return a list of article dicts."""
     feed = feedparser.parse(feed_url)
     articles = []
     
-    num_articles = min(len(feed.entries), limit)
+    if not feed.entries:
+        print(f"--- WARNING: No entries found in feed: {feed_url} ---")
+        return [] # Return empty list immediately
+        
+    # Use min() to avoid errors if the feed has fewer articles than the limit
+    num_to_fetch = min(len(feed.entries), limit)
     
-    for entry in feed.entries[:num_articles]:
-        articles.append({
-            'title': entry.title,
-            'summary': entry.get('summary', entry.get('description', '')),
-            'link': entry.link,
-            'published': entry.get('published', 'No date') 
-        })
+    for entry in feed.entries[:num_to_fetch]:
+        try:
+            # --- THIS IS THE FIX ---
+            # We now use .get() for *everything* to prevent crashes
+            # If a field is missing, it uses a fallback (e.g., 'No Title')
+            
+            title = entry.get('title', 'No Title Provided')
+            link = entry.get('link', '#') # '#' is a safe fallback link
+            summary = entry.get('summary', entry.get('description', ''))
+            published = entry.get('published', 'No date')
+            
+            articles.append({
+                'title': title,
+                'summary': summary,
+                'link': link,
+                'published': published
+            })
+        except Exception as e:
+            # This will catch any unexpected errors with a single article
+            # and allow the loop to continue.
+            print(f"--- ERROR: Skipping malformed article. Error: {e} ---")
+            continue # Go to the next article
+            
     return articles
 
 @st.cache_data(ttl="5m") # 5 Minute Cache
