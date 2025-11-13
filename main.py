@@ -58,30 +58,25 @@ def display_articles(articles: list, key_prefix: str):
                 text_to_summarize = article.get('link')
                 
                 if text_to_summarize: 
-                    with st.spinner("Scraping and summarizing..."):
+                    with st.spinner("Summarizing..."):
                         full_text = extract_text_from_url(text_to_summarize)
                         
                         if full_text:
                             # --- 1. GET THE SUMMARY ---
                             summary_result = summarize_text(full_text)
-                            st.success("AI-Generated Summary:")
+                            st.success("Summary:")
                             st.markdown(f"""
                             <div style='background-color:#202020; padding: 1rem; border-radius: 12px; color: white'>
                                 {summary_result}
                             </div>
                             """, unsafe_allow_html=True)
                             
-                            # --- 2. NEW: SHOW THE FULL SCRAPED TEXT ---
-                            st.info("Full Scraped Article Text (for reference):")
-                            # We put it in an expander so it doesn't clog the page
-                            with st.expander("Click to Read Full Scraped Text"):
-                                st.text(full_text)
+                            # --- 2. The full article text is no longer shown ---
                             
                         else:
                             st.error("Could not extract text from the article link.")
                 else:
                     st.warning("No article link available to summarize.")
-
 TRUSTED_DOMAINS = [
     "indiatoday.in",
     "indianexpress.com",
