@@ -1,7 +1,7 @@
 import streamlit as st
 from utils import extract_text_from_url
-# Import the NEW functions and the RSS_FEEDS dict
-from fetch_news import fetch_breaking_news, fetch_general_news, RSS_FEEDS
+# --- 1. IMPORT THE NEW YOUTUBE FUNCTION ---
+from fetch_news import fetch_breaking_news, fetch_general_news, fetch_youtube_shorts, RSS_FEEDS
 from summarizer import summarize_text , load_qa_pipeline , answer_question
 from urllib.parse import urlparse
 from ddgs import DDGS
@@ -12,7 +12,7 @@ st.set_page_config(page_title="📰 News Article Summarizer")
 st.markdown('<h1 style="text-align: center;">📰 News Article Summarizer</h1>', unsafe_allow_html=True)
 
 
-# --- Summarization from URL or Raw Text (This section is unchanged) ---
+# --- (Summarization from URL & display_articles functions are unchanged) ---
 st.subheader("🔗 Summarize from URL or Raw Text")
 user_input = st.text_area("Paste article URL or raw text")
 
@@ -33,8 +33,6 @@ if st.button("Summarize"):
     else:
         st.error("Failed to extract or process the text.")
 
-# --- Helper Function to Display Articles (NEW) ---
-# This avoids repeating code in our tabs!
 def display_articles(articles: list, key_prefix: str):
     
     if not articles:
@@ -46,13 +44,11 @@ def display_articles(articles: list, key_prefix: str):
             st.markdown(article['summary'], unsafe_allow_html=True)
             st.markdown(f"[🔗 Full Article]({article['link']})")
             
-            # We use the key_prefix and index to make a unique key
             if st.button(f"Summarize This Article", key=f"summarize_{key_prefix}_{idx}"):
                 
-                # Use the article link to get the full text
                 text_to_summarize = article.get('link')
                 
-                if text_to_summarize: # Fixed typo: text_to_summarIZE
+                if text_to_summarize: 
                     with st.spinner("Summarizing..."):
                         full_text = extract_text_from_url(text_to_summarize)
                         
@@ -70,41 +66,29 @@ def display_articles(articles: list, key_prefix: str):
                     st.warning("No article link available to summarize.")
 
 TRUSTED_DOMAINS = [
-    "indiatoday.in",
-    "indianexpress.com",
-    "ndtv.com",
-    "thehindu.com",
-    "timesofindia.com",
-    "hindustantimes.com",
-    "newsbytesapp.com",
-    "techcrunch.com",
-    "nytimes.com",
-    "theguardian.com",
+    "indiatoday.in", "indianexpress.com", "ndtv.com", "thehindu.com",
+    "timesofindia.com", "hindustantimes.com", "newsbytesapp.com",
+    "techcrunch.com", "nytimes.com", "theguardian.com",
 ]
 
 # --- REFACTORED RSS Trending News Section (Using Tabs) ---
 st.subheader("📰 Trending Articles")
 
-# --- 1. HERE IS THE CHANGED TAB ORDER ---
-tab1, tab2, tab3 , tab4, tab5 = st.tabs(["⚡ Breaking News", "🤖Ask AI", "📰 General News", "💻 Tech News" , "🌐Around TheWorld"])
+# --- 2. ADD THE NEW TAB NAME ---
+tab1, tab2, tab3 , tab4, tab5, tab6 = st.tabs([
+    "⚡ Breaking News", "🤖Ask AI", "📰 General News", "💻 Tech News" , "🌐Around TheWorld", "🎬 News Reels"
+])
 
-# --- Tab 1: Breaking News (Unchanged) ---
+# --- Tab 1: Breaking News ---
 with tab1:
-    
-    # --- 1. PUT THE BUTTON AT THE TOP ---
     if st.button("Refresh Breaking News", key="refresh_breaking"):
-        # This clears all data caches (RSS feeds)
         st.cache_data.clear() 
-        # This re-runs the app from the top
         st.rerun() 
     
-    # --- 2. FETCH THE NEWS *AFTER* THE BUTTON ---
-    # 1. Call the 5-minute cache function
     breaking_articles = fetch_breaking_news(RSS_FEEDS["NDTV"])
-    
-    # 3. Use the helper to display them (I also fixed the typo from your code)
     display_articles(breaking_articles, key_prefix="breaking")
-# --- Tab 2: Ask AI (Moved from tab5) ---
+
+# --- Tab 2: Ask AI ---
 with tab2:
     st.subheader("Ask Questions Regarding Today's News")
     st.markdown("I will search trusted news sources find an answer.")
@@ -118,20 +102,17 @@ with tab2:
         else:
             clean_question = question.lower().strip()
             
-            # --- 1. THE "SUPER ROUTER" (for Tech) ---
+            # (Rest of your Ask AI "Super Router" logic goes here... unchanged)
             if "tech" in clean_question or "technology" in clean_question:
-                
+                # (Tech question logic)
                 st.info("Tech question detected! Fetching from internal TechCrunch RSS feed...")
                 with st.spinner("Fetching TechCrunch news..."):
                     tech_articles = fetch_general_news(RSS_FEEDS["TechCrunch"])
-                    
                     if not tech_articles:
                         st.error("Could not fetch articles from TechCrunch RSS feed.")
                         st.stop()
-                    
                     all_summaries = [article['summary'] for article in tech_articles]
                     context = " ".join(all_summaries)
-
                 with st.spinner("Summarizing tech news..."):
                     answer = summarize_text(context)
                     st.subheader("Summary of What's Happening in Tech:")
@@ -142,30 +123,21 @@ with tab2:
                     """, unsafe_allow_html=True)
             
             else:
-                # --- 2. THE "ELSE" BLOCK (for all other questions) ---
-                
+                # (Web search logic for all other questions)
                 context = ""
                 with st.spinner(f"Searching trusted sites for: '{question}'..."):
-                    
                     site_query = " OR ".join([f"site:{domain}" for domain in TRUSTED_DOMAINS])
                     final_query = f"{question} ({site_query})"
-                    
                     try:
                         search_results: List[Dict[str, str]] = DDGS().text(
-                            query=final_query,
-                            region="in-en",
-                            max_results=5,
-                            timelimit="w"
+                            query=final_query, region="in-en", max_results=5, timelimit="w"
                         )
-                        
                         if not search_results:
                             st.error("No results found on your trusted news sites for that query.")
                             st.stop()
-
                         print("--- RAW SEARCH RESULTS (DEBUG) ---")
                         print(json.dumps(search_results, indent=2))
                         print("---------------------------------")
-
                     except Exception as e:
                         st.error(f"Error searching DuckDuckGo: {e}")
                         st.stop()
@@ -175,28 +147,21 @@ with tab2:
                     for result in search_results[:5]: # Use top 5
                         if "body" in result:
                             all_summaries.append(result["body"])
-
                     context = " ".join(all_summaries)
-                    
                     if not context:
                         st.error("I found results, but they had no text summaries.")
                         st.stop()
 
-                # --- 4. THE "SMART ROUTER" (Long/Short Answer) ---
                 with st.spinner("Analyzing and generating answers..."):
-                    
                     broad_question_triggers = ("what's happening", "what's new", "tell me about", "summarize")
                     
                     if any(clean_question.startswith(trigger) for trigger in broad_question_triggers):
-                        # --- BROAD QUESTION ---
+                        # (Broad question logic)
                         st.write("Broad question detected. Running Summarizer...")
                         answer = summarize_text(context)
-                        
-                        # --- FIX: Create an HTML link ---
                         first_result_url = search_results[0].get('href', '#')
                         html_link = f'<a href="{first_result_url}" target="_blank" style="color: #00BFFF; text-decoration: none;">🔗 Read the top article</a>'
                         answer_with_link = f"{answer}<br><br>{html_link}"
-                        
                         st.subheader("Summary of Findings:")
                         st.markdown(f"""
                         <div style='background-color:#202020; padding: 1rem; border-radius: 12px; color: white'>
@@ -205,13 +170,10 @@ with tab2:
                         """, unsafe_allow_html=True)
                     
                     else:
-                        # --- SPECIFIC QUESTION ---
+                        # (Specific question logic)
                         st.write("Specific question detected. Running QA and Summarizer...")
-                        
                         short_answer = answer_question(question, context)
                         long_answer = summarize_text(context)
-                        
-                        # --- FIX: Create an HTML link ---
                         first_result_url = search_results[0].get('href', '#')
                         html_link = f'<a href="{first_result_url}" target="_blank" style="color: #00BFFF; text-decoration: none;">🔗 Read the top article</a>'
                         long_answer_with_link = f"{long_answer}<br><br>{html_link}"
@@ -241,26 +203,53 @@ with tab2:
                             {long_answer_with_link}
                         </div>
                         """, unsafe_allow_html=True)
-                        
-                    # --- "Show raw search results" expander is removed ---
 
-# --- Tab 3: General News (Moved from tab2) ---
+# --- Tab 3: General News ---
 with tab3:
-    # 1. Call the 30-minute cache function
     general_articles = fetch_general_news(RSS_FEEDS["Times of India"])
-    # 2. Use the helper to display them
     display_articles(general_articles, key_prefix="general")
 
-# --- Tab 4: Tech News (Moved from tab3) ---
+# --- Tab 4: Tech News ---
 with tab4:
-    # 1. Call the 30-minute cache function (it's reusable!)
     tech_articles = fetch_general_news(RSS_FEEDS["TechCrunch"])
-    # 2. Use the helper to display them
     display_articles(tech_articles, key_prefix="tech")
 
-# --- Tab 5: Around The World (Moved from tab4) ---
+# --- Tab 5: Around The World ---
 with tab5:
-    # 1. Call the 30-minute cache function (it's reusable!)
     Around_world = fetch_general_news(RSS_FEEDS["BBC World"])
-    # 2. Use the helper to display them
     display_articles(Around_world, key_prefix="World")
+
+# --- 3. NEW: This is the logic for your new tab ---
+with tab6:
+    st.subheader("🎬 Latest News Reels")
+    
+    if st.button("Refresh Reels", key="refresh_reels"):
+        st.cache_data.clear()
+        st.rerun()
+
+    # Call our new function
+    shorts = fetch_youtube_shorts(RSS_FEEDS["NDTV_Youtube"])
+
+    if not shorts:
+        st.info("No recent #shorts found in the NDTV YouTube feed.")
+    else:
+        # Create a 3-column grid
+        col1, col2, col3 = st.columns(3)
+        
+        # Distribute the shorts into the columns
+        for i, short in enumerate(shorts):
+            if i % 3 == 0:
+                with col1:
+                    st.image(short['thumbnail'], use_column_width=True)
+                    st.markdown(f"[{short['title']}]({short['link']})")
+                    st.divider()
+            elif i % 3 == 1:
+                with col2:
+                    st.image(short['thumbnail'], use_column_width=True)
+                    st.markdown(f"[{short['title']}]({short['link']})")
+                    st.divider()
+            else:
+                with col3:
+                    st.image(short['thumbnail'], use_column_width=True)
+                    st.markdown(f"[{short['title']}]({short['link']})")
+                    st.divider()
